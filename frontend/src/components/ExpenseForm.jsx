@@ -1,13 +1,14 @@
 // src/components/ExpenseForm.jsx
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { X, Plus } from 'lucide-react'
+import { X, Plus, Users } from 'lucide-react'
 
 const ExpenseForm = ({ members, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
-    paidBy: members[0] || ''
+    paidBy: members[0] || '',
+    splitBetween: [...members] // Default to all members
   })
 
   const handleSubmit = (e) => {
@@ -17,11 +18,34 @@ const ExpenseForm = ({ members, onSubmit, onClose }) => {
       return
     }
     
+    if (formData.splitBetween.length === 0) {
+      alert('Please select at least one member to split the expense with')
+      return
+    }
+    
     onSubmit({
       description: formData.description,
       amount: parseFloat(formData.amount),
-      paidBy: formData.paidBy
+      paidBy: formData.paidBy,
+      splitBetween: formData.splitBetween
     })
+  }
+
+  const toggleMember = (member) => {
+    setFormData(prev => ({
+      ...prev,
+      splitBetween: prev.splitBetween.includes(member)
+        ? prev.splitBetween.filter(m => m !== member)
+        : [...prev.splitBetween, member]
+    }))
+  }
+
+  const selectAll = () => {
+    setFormData(prev => ({ ...prev, splitBetween: [...members] }))
+  }
+
+  const selectNone = () => {
+    setFormData(prev => ({ ...prev, splitBetween: [] }))
   }
 
   return (
@@ -36,7 +60,7 @@ const ExpenseForm = ({ members, onSubmit, onClose }) => {
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
-        className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl"
+        className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
@@ -95,6 +119,51 @@ const ExpenseForm = ({ members, onSubmit, onClose }) => {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium text-gray-700">
+                Split between ({formData.splitBetween.length} selected)
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={selectAll}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={selectNone}
+                  className="text-xs text-gray-600 hover:text-gray-800 font-medium"
+                >
+                  None
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+              {members.map((member) => (
+                <button
+                  key={member}
+                  type="button"
+                  onClick={() => toggleMember(member)}
+                  className={`p-2 rounded-lg text-sm font-medium transition-all ${
+                    formData.splitBetween.includes(member)
+                      ? 'bg-blue-100 text-blue-700 border-2 border-blue-200'
+                      : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                  }`}
+                >
+                  {member}
+                </button>
+              ))}
+            </div>
+            {formData.splitBetween.length > 0 && (
+              <p className="text-xs text-gray-500 mt-2">
+                ₹{(parseFloat(formData.amount || 0) / formData.splitBetween.length).toFixed(2)} per person
+              </p>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">

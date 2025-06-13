@@ -84,15 +84,17 @@ app.get('/api/groups/:teamCode', async (req, res) => {
 });
 
 // Add expense
+// Update the expense creation endpoint to handle splitBetween
 app.post('/api/expenses', async (req, res) => {
   try {
-    const { teamCode, description, amount, paidBy } = req.body;
+    const { teamCode, description, amount, paidBy, splitBetween } = req.body;
     
     const expense = new Expense({
       teamCode,
       description,
       amount: parseFloat(amount),
       paidBy,
+      splitBetween: splitBetween || [], // Handle the new field
       createdAt: new Date()
     });
     

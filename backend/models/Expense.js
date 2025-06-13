@@ -5,6 +5,7 @@ const expenseSchema = new mongoose.Schema({
   description: { type: String, required: true },
   amount: { type: Number, required: true },
   paidBy: { type: String, required: true },
+  splitBetween: [{ type: String, required: true }], // Array of member names who should split this expense
   createdAt: { type: Date, default: Date.now }
 });
 
